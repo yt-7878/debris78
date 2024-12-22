@@ -32,11 +32,47 @@
 
   <script>
     // 地図を初期化
-    const map = L.map('map').setView([35.683514, 139.698667], 13); // 初期位置: 東京タワー
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // const map = L.map('map').setView([36.0756266, 139.99472129], 13);  // 初期表示座標
+    const map = L.map('map').setView([35.6895, 139.69172], 13);  // 初期表示座標
+
+    // 背景地図レイヤーを初期化
+    // タイルサーバー登録
+    const baseLayers = {
+      OpenStreetMap: L.tileLayer(
+          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          {
+              maxZoom: 19,
+              attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          },
+      ),
+      地理院地図: L.tileLayer(
+          'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+          {
+              maxZoom: 18,
+              attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>',
+          },
+      ),
+      空中写真: L.tileLayer(
+          'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+          {
+              maxZoom: 17,
+              attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>'
+          },
+      ),
+    };
+    map.addLayer(baseLayers['地理院地図']);  // OSMを初期表示
+
+    // レイヤー切り替えコントロール
+    const layersControl = L.control
+                            .layers(baseLayers, [], { collapsed: false })
+                            .addTo(map);
+
+    // 地図を初期化
+    // const map = L.map('map').setView([35.6895, 139.69172], 13); // 初期位置: 東京タワー
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   maxZoom: 19,
+    //   attribution: '© OpenStreetMap contributors'
+    // }).addTo(map);
   
     let kmlLayer; // KMLレイヤーの参照を保持
   
@@ -53,7 +89,8 @@
           const parser = new DOMParser();
           const kml = parser.parseFromString(kmlText, "text/xml");
           kmlLayer = new L.KML(kml); // Leaflet-KMLプラグインを使用
-          map.addLayer(kmlLayer);
+          // map.addLayer(kmlLayer);
+          layersControl.addOverlay(kmlLayer, 'kmlデータ')
         })
         .catch(error => console.error('KMLファイル読み込みの際に問題が発生しました。:', error));
     }

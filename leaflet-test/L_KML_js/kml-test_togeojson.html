@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- <script src="./leaflet.filelayer.js"></script> -->
   <!-- <script src="./L.KML.js"></script> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
 
   <style>
     #map {
@@ -34,11 +34,45 @@
 
   <script>
     // 地図を初期化
-    const map = L.map('map').setView([35.683514, 139.698667], 13); // 初期位置: 東京タワー
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // const map = L.map('map').setView([35.683514, 139.698667], 13);
+    const map = L.map('map').setView([35.6895, 139.69172], 13); // 初期位置：新宿駅
+
+    // 背景地図レイヤーを追加
+    // タイルサーバー登録
+    const baseLayers = {
+      地理院地図: L.tileLayer(
+        'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+        {
+          maxZoom: 18,
+          attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>',
+        },
+      ),
+      空中写真: L.tileLayer(
+        'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+        {
+          maxZoom: 17,
+          attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>'
+        },
+      ),
+      OpenStreetMap: L.tileLayer(
+        'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+        {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        },
+      ),
+    };
+    map.addLayer(baseLayers['地理院地図']);
+
+    // レイヤー切り替えコントロール
+    const layersControl = L.control
+                            .layers(baseLayers, [], { collapsed: false })
+                            .addTo(map);
+
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   maxZoom: 19,
+    //   attribution: '© OpenStreetMap contributors'
+    // }).addTo(map);
 
     let kmlLayer; // KMLレイヤーの参照を保持
 
@@ -66,8 +100,9 @@
         const geoJson = toGeoJSON.kml(kmlDom);
 
         // GeoJSONデータをレイヤーに追加
-        kmlLayer = L.geoJSON(geoJson);
-        map.addLayer(kmlLayer);
+        kmlLayer = L.geoJSON(geoJson).addTo(map);
+        // map.addLyer(kmlLayer);
+        layersControl.addOverlay(kmlLayer, 'kmlデータ');
       } catch (error) {
         console.error('KMLの読み込みまたは変換に失敗しました:', error);
       }
