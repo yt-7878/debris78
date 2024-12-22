@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>leaflet-test</title>
+    <!-- LeafletのCSS読み込み -->
+    <link rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+            integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+            crossorigin=""
+    />
+    <!-- LeafletのJavaScript読み込み -->
+    <script
+        src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""
+    ></script>
+    <!-- Leaflet.markerclusterを読み込み -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.3.0/dist/leaflet.markercluster.js"></script>
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.css"
+    />
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.Default.css"
+    />
+</head>
+<body>
+    <!-- 地図を表示するdiv要素を宣言 -->
+    <div id="map" style="height: 90vh;"></div>
+    <script>
+        // 地図インスタンスを初期化 (=div要素に地図画面が埋め込まれる)
+        const map = L.map('map', {
+            center: [35.3627808, 138.7307908],  // 初期表示の地図中心の[緯度，経度]
+            zoom: 14,  // 初期ズームレベル
+        });
+        // 背景レイヤーインスタンスを初期化
+        // 背景地図データ
+        const baseLayers = {
+            OpenStreetMap: L.tileLayer(
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                },
+            ),
+            地理院地図: L.tileLayer(
+                'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+                {
+                    maxZoom: 18,
+                    attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>',
+                },
+            ),
+            空中写真: L.tileLayer(
+                'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+                {
+                    maxZoom: 17,
+                    attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>'
+                },
+            ),
+        };
+        map.addLayer(baseLayers['OpenStreetMap']);  // OSMを初期表示
+
+        // レイヤー切り替えコントロール
+        const layersControl = L.control
+            .layers(baseLayers, [], { collapsed: false })
+            .addTo(map);
+
+        // ピン定義
+        // const marker = L.marker([33, 129.5]);  // ピン=Markerを初期化
+        // marker.bindPopup('平面直角座標1系原点');  // ポップアップを紐付け
+        // map.addLayer(marker);  // ピンを地図上に追加
+
+        // L.marker([33, 131.0]).bindPopup('平面直角座標2系原点').addTo(map);
+        // L.marker([36, 132.1666666]).bindPopup('平面直角座標3系原点').addTo(map);
+        // L.marker([33, 133.5]).bindPopup('平面直角座標4系原点').addTo(map);
+        // L.marker([36, 136.0]).bindPopup('平面直角座標6系原点').addTo(map);
+        // L.marker([40, 140.8333333]).bindPopup('平面直角座標10系原点').addTo(map);
+        // L.marker([44, 142.5]).bindPopup('平面直角座標11系原点').addTo(map);
+        // L.marker([26, 154.0]).bindPopup('平面直角座標系19系原点').addTo(map);
+        // L.marker([35.68862325, 139.70077862]).bindPopup('新宿駅').addTo(map);
+
+        // GeoJSONレイヤーを作成
+        // fetch('./P29-21_10.geojson')  // 群馬県の学校データのGeoJSONを非同期読み込み
+        //     .then((res) => res.json())
+        //     .then((json) => {
+        //         // GeoJSONレイヤーを作成
+        //         L.geoJSON(json)
+        //             .bindPopup((layer) => `<strong>学校名:</strong> ${layer.feature.properties.P29_004}</br><span>住所： </span>${layer.feature.properties.P29_005}`)  // ポップアップで学校名を表示
+        //             .addTo(map);  // 地図に追加
+        //     });
+
+        // fetch('./A31a-10-23_12_1200030001_10.geojson')
+        //     .then((res) => res.json())
+        //     .then((geojson) => {
+        //         L.geoJSON(geojson)
+        //             .bindPopup((layer) => layer.featuer.properties.A31a_102)
+        //             .addTo(map);
+        //     });
+
+        // fetch('P29-21.geojson')
+        //     .then((res) => res.json())
+        //     .then((json) => {
+        //         // L.geoJSON(json)
+        //         //     .bindPopup((layer) => layer.feauture.properties.P29_004)
+        //         //     .addTo(map);
+
+        //         // クラスタリングレイヤーを作成し地図に追加
+        //         const markers = L.markerClusterGroup()
+        //             .bindPopup(
+        //                 (layer) => layer.feature.properties.P29_004,
+        //             )
+        //             .addTo(map);
+ 
+        //         L.geoJSON(json).addTo(markers);
+        //     });
+
+        // 円形
+        // L.circle([35.3627808, 138.7307908], {
+        //     color: 'yellow',
+        //     fillColor: '#ff0000',
+        //     fillOpacity: 0.3,
+        //     radius: 1000,
+        //     weight: 15,
+        // })
+        //     .bindPopup('I am Circle!')
+        //     .addTo(map);
+
+        // // 線分
+        // L.polyline(
+        //     [
+        //         [35.36, 138.73],
+        //         [35.37, 138.73],
+        //         [35.37, 138.74],
+        //         [35.38, 138.74],
+        //         [35.39, 138.75],
+        //         [35.37, 138.75],
+        //     ],
+        //     { 
+        //         color: 'blue',
+        //         weight: 10,
+        //      },
+        // )
+        //     .bindPopup('I am Polyline!')
+        //     .addTo(map);
+
+        // // 多角形
+        // L.polygon(
+        //     [
+        //         [35.36, 138.7307908],
+        //         [35.35, 138.74],
+        //         [35.34, 138.72],
+        //     ],
+        //     {
+        //         color: 'green',
+        //         weight: 10,
+        //     },
+        // )
+        //     .bindPopup('I am Polygon!')
+        //     .addTo(map);
+
+        // L.marker([35.36, 138.7307908]).bindPopup('平面直角座標11系原点').addTo(map);
+        // L.marker([35.35, 138.74]).bindPopup('平面直角座標系19系原点').addTo(map);
+        // L.marker([35.34, 138.72]).bindPopup('新宿駅').addTo(map);
+
+        fetch('http://localhost:5500/ichijouhou/engineer/geojson/A16-15_00_DID.geojson')  // 人口集中地区データ
+            .then((res) => res.json())
+            .then((json) => {
+                // GeoJSONレイヤーを作成
+                const polygon = L.geoJSON(json, {
+                    style: (feature) => ({
+                        color: 'red',
+                        stroke: false,
+                        // 人口を面積で割った値でポリゴンの濃さを変える
+                        fillOpacity:
+                            feature.properties['人口'] /
+                            feature.properties['面積'] /
+                            20000,
+                    }),
+                })
+                // ポップアップで人口を表示
+                .bindPopup(
+                    (layer) =>
+                        '人口: ' + layer.feature.properties['人口'],
+                )
+                .addTo(map);
+
+                // レイヤー一覧に追加
+                layersControl.addOverlay(polygon, '人口集中地区');
+            });
+
+        // 事業者種別コード別に色を塗り分ける
+        const colorDict = {
+            1: 'green',
+            2: 'blue',
+            3: 'red',
+            4: 'orange',
+            5: 'purple',
+        };
+        // 事業者種別コード別に線の太さをかき分ける
+        const weightDict = {
+            1: 10,
+            2: 7,
+            3: 4,
+            4: 4,
+            5: 4,
+        };
+
+        fetch('http://localhost:5500/ichijouhou/engineer/geojson/N02-21_RailroadSection.geojson')  // 鉄道データ
+            .then((res) => res.json())
+            .then((json) => {
+                // GeoJSONレイヤーを作成
+                const line = L.geoJSON(json, {
+                    style: (feature) => ({
+                        weight: weightDict[feature.properties.N02_002],  // 事業者種別コードから線の太さを得る
+                        color: colorDict[feature.properties.N02_002],  // 事業者種別コードから線の色を得る
+                    }),
+                })
+                // ポップアップで事業者名と路線名を表示
+                .bindPopup(
+                    (layer) =>
+                        layer.feature.properties.N02_004 +
+                        '<br />' +
+                        layer.feature.properties.N02_003,
+                )
+                .addTo(map);
+                // レイヤー一覧に追加
+                layersControl.addOverlay(line, '鉄道データ');
+            });
+            
+    </script>
+</body>
+</html>
