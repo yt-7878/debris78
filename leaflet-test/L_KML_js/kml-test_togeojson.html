@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic KML with Leaflet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- <script src="./leaflet.filelayer.js"></script> -->
+  <!-- <script src="./L.KML.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js" defer></script>
+
   <style>
     #map {
       width: 100%;
@@ -26,9 +31,6 @@
     <input id="time-slider" type="range" min="0" max="1" step="1" value="0">
     <div id="time-display">Current Time: 0h</div>
   </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- <script src="./leaflet.filelayer.js"></script> -->
-  <script src="./L.KML.js"></script>
 
   <script>
     // 地図を初期化
@@ -37,29 +39,41 @@
       maxZoom: 19,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-  
+
     let kmlLayer; // KMLレイヤーの参照を保持
-  
-    // KMLファイルを動的に読み込む関数
-    function loadKmlFile(hour) {
-      const kmlUrl = `http://localhost:5500/leaflet-test/L_KML_js/time_${hour}.kml`; // 時間に対応するKMLファイル
-      console.log(kmlUrl);
-      if (kmlLayer) {
-        map.removeLayer(kmlLayer); // 既存のKMLを削除
+
+    // KMLファイルを取得してGeoJSONに変換する関数
+    async function loadAndConvertKML(hour) {
+      try {
+        const kmlUrl = `http://localhost:5500/leaflet-test/L_KML_js/time_${hour}.kml`; // 時間に対応するKMLファイル
+        console.log(kmlUrl);
+
+        // 既存のKMLを削除
+        if (kmlLayer) {
+          map.removeLayer(kmlLayer);
+        }
+        const response = await fetch(kmlUrl);
+        if (!response.ok) throw new Error(`HTTPエラー: ${response.status}`);
+        const kmlText = await response.text();
+
+        // KMLをDOM形式に変換
+        const parser = new DOMParser();
+        const kmlDom = parser.parseFromString(kmlText, 'application/xml');
+
+        // KMLをGeoJSONに変換
+        const geoJson = toGeoJSON.kml(kmlDom);
+
+        // GeoJSONデータを地図に追加
+        // L.geoJSON(geoJson).addTo(map);
+        kmlLayer = L.geoJSON(geoJson);
+        map.addLayer(kmlLayer);
+      } catch (error) {
+        console.error('KMLの読み込みまたは変換に失敗しました:', error);
       }
-      fetch(kmlUrl)
-        .then(response => response.text())
-        .then(kmlText => {
-          const parser = new DOMParser();
-          const kml = parser.parseFromString(kmlText, "text/xml");
-          kmlLayer = new L.KML(kml); // Leaflet-KMLプラグインを使用
-          map.addLayer(kmlLayer);
-        })
-        .catch(error => console.error('KMLファイル読み込みの際に問題が発生しました。:', error));
     }
-  
+
     // 初期状態として時間 0 のKMLファイルを読み込む
-    loadKmlFile(0);
+    loadAndConvertKML(0);
   
     // スライダーのイベントリスナーを設定
     const timeSlider = document.getElementById('time-slider');
@@ -68,7 +82,7 @@
     timeSlider.addEventListener('input', () => {
       const hour = timeSlider.value;
       timeDisplay.textContent = `Current Time: ${hour}h`;
-      loadKmlFile(hour); // スライダーの値に応じてKMLファイルを変更
+      loadAndConvertKML(hour); // スライダーの値に応じてKMLファイルを変更
     });
   </script>
   
