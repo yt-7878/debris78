@@ -52,6 +52,8 @@
         if (kmlLayer) {
           map.removeLayer(kmlLayer);
         }
+        
+        // KMLファイルを取得
         const response = await fetch(kmlUrl);
         if (!response.ok) throw new Error(`HTTPエラー: ${response.status}`);
         const kmlText = await response.text();
@@ -63,8 +65,7 @@
         // KMLをGeoJSONに変換
         const geoJson = toGeoJSON.kml(kmlDom);
 
-        // GeoJSONデータを地図に追加
-        // L.geoJSON(geoJson).addTo(map);
+        // GeoJSONデータをレイヤーに追加
         kmlLayer = L.geoJSON(geoJson);
         map.addLayer(kmlLayer);
       } catch (error) {
