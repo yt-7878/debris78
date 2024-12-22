@@ -1,0 +1,44 @@
+services:
+    db:
+        image: postgis/postgis:17-3.5
+        environment:
+            POSTGRES_DB: testdb
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+        ports:
+            - 5432:5432
+        volumes:
+            - db-data:/var/lib/postgresql/data
+
+    pgadmin4:
+        image: dpage/pgadmin4:8.4
+        depends_on:
+            - db
+        environment:
+            PGADMIN_DEFAULT_EMAIL: yoshiki7878@gmail.com
+            PGADMIN_DEFAULT_PASSWORD: password
+        ports:
+            - "8080:80"
+        volumes:
+            - pgadmin4-data:/var/lib/pgadmin
+
+    web:
+        build: .
+        depends_on:
+            - db
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./src:/src
+        command: >
+            sh -c "
+            until nc -z db 5432; do
+            echo 'Waiting for PostGIS to be ready...';
+            sleep 1;
+            done;
+            python manage.py runserver 0.0.0.0:8000
+            "
+      
+volumes:
+    db-data:
+    pgadmin4-data:

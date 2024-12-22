@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic KML with Leaflet</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      width: 100%;
+      height: 80vh;
+    }
+    #slider-container {
+      text-align: center;
+      margin: 10px 0;
+    }
+    #time-display {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="slider-container">
+    <label for="time-slider">ラベル</label>
+    <input id="time-slider" type="range" min="0" max="1" step="1" value="0">
+    <div id="time-display">Current Time: 0h</div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./leaflet.filelayer.js"></script>
+  <script src="./L.KML.js"></script>
+
+  <script>
+    // 地図を初期化
+    const map = L.map('map').setView([35.683514, 139.698667], 13); // 初期位置: 東京タワー
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+  
+    let kmlLayer; // KMLレイヤーの参照を保持
+  
+    // KMLファイルを動的に読み込む関数
+    function loadKmlFile(hour) {
+      const kmlUrl = `time_${hour}.kml`; // 時間に対応するKMLファイル
+      console.log(kmlUrl);
+      if (kmlLayer) {
+        map.removeLayer(kmlLayer); // 既存のKMLを削除
+      }
+      fetch(kmlUrl)
+        .then(response => response.text())
+        .then(kmlText => {
+          const parser = new DOMParser();
+          const kml = parser.parseFromString(kmlText, "text/xml");
+          kmlLayer = new L.KML(kml); // Leaflet-KMLプラグインを使用
+          map.addLayer(kmlLayer);
+        })
+        .catch(error => console.error('KMLファイル読み込みの際に問題が発生しました。:', error));
+    }
+  
+    // 初期状態として時間 0 のKMLファイルを読み込む
+    loadKmlFile(0);
+  
+    // スライダーのイベントリスナーを設定
+    const timeSlider = document.getElementById('time-slider');
+    const timeDisplay = document.getElementById('time-display');
+  
+    timeSlider.addEventListener('input', () => {
+      const hour = timeSlider.value;
+      timeDisplay.textContent = `Current Time: ${hour}h`;
+      loadKmlFile(hour); // スライダーの値に応じてKMLファイルを変更
+    });
+  </script>
+  
+</body>
+</html>
