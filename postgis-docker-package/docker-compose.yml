@@ -9,13 +9,14 @@ services:
             - 5432:5432
         volumes:
             - db-data:/var/lib/postgresql/data
+            - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     pgadmin4:
         image: dpage/pgadmin4:8.4
         depends_on:
             - db
         environment:
-            PGADMIN_DEFAULT_EMAIL: yoshiki7878@gmail.com
+            PGADMIN_DEFAULT_EMAIL: abcd1234@example.com
             PGADMIN_DEFAULT_PASSWORD: password
         ports:
             - "8080:80"
@@ -23,7 +24,7 @@ services:
             - pgadmin4-data:/var/lib/pgadmin
 
     web:
-        build: .
+        build: ./web
         depends_on:
             - db
         ports:
